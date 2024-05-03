@@ -30,23 +30,23 @@ for name, flights in airlines_json.items():
 
 app = FastAPI()
 
-@app.get("/", response_model=GetRequestResponse, status_code=status.HTTP_200_OK)
-async def get_airline_names() -> GetRequestResponse:
+@app.get("/", response_model=list[str], status_code=status.HTTP_200_OK)
+async def get_airline_names() -> list[str]:
     data = list(airlines.keys())
-    return GetRequestResponse(data=data)
+    return data
 
-@app.get("/{airline_name}", response_model=GetRequestResponse, status_code=status.HTTP_200_OK)
-async def get_airline_flight_numbers(airline_name: str) -> GetRequestResponse:
+@app.get("/{airline_name}", response_model=list[str], status_code=status.HTTP_200_OK)
+async def get_airline_flight_numbers(airline_name: str) -> list[str]:
     airline: list[Airline]= [airline for name, airline in airlines.items() if name == airline_name]
     if not airline:
         return HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"{airline_name} not found.")
     else:
         airline: Airline = airline[0]
     data = [flight.flight_num for flight in airline.flights]
-    return GetRequestResponse(data=data)
+    return data
 
-@app.get("/{airline_name}/{flight_num}")
-async def get_airline_flight(airline_name: str, flight_num: str) -> GetRequestResponse:
+@app.get("/{airline_name}/{flight_num}", response_model=Flight)
+async def get_airline_flight(airline_name: str, flight_num: str) -> Flight:
     airline: list[Flight] = [airline for name, airline in airlines.items() if name == airline_name]
     if not airline:
         return HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"{airline_name} not found.")
@@ -58,7 +58,7 @@ async def get_airline_flight(airline_name: str, flight_num: str) -> GetRequestRe
     else:
         flight: Flight = flight.pop()
     data = flight
-    return GetRequestResponse(data=data)
+    return data
 
 @app.post("/{airline_name}", response_model=FlightResponse)
 async def add_flight(airline_name: str, flight: Flight):
